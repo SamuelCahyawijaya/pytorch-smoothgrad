@@ -11,10 +11,10 @@ class VanillaGrad(object):
         self.pretrained_model = pretrained_model
         self.features = pretrained_model.features
         self.cuda = cuda
-        #self.pretrained_model.eval()
+        self.pretrained_model.eval()
 
     def __call__(self, x, index=None):
-        output = self.pretrained_model(x)
+        output = self.pretrained_model.predict_proba(x)
 
         if index is None:
             index = np.argmax(output.data.cpu().numpy())
@@ -61,7 +61,7 @@ class SmoothGrad(VanillaGrad):
                 x_plus_noise = Variable(torch.from_numpy(x_plus_noise).cuda(), requires_grad=True)
             else:
                 x_plus_noise = Variable(torch.from_numpy(x_plus_noise), requires_grad=True)
-            output = self.pretrained_model(x_plus_noise)
+            output = self.pretrained_model.predict_proba(x_plus_noise)
 
             if index is None:
                 index = np.argmax(output.data.cpu().numpy())
@@ -84,7 +84,6 @@ class SmoothGrad(VanillaGrad):
                 total_gradients += (grad * grad)
             else:
                 total_gradients += grad
-            #if self.visdom:
 
         avg_gradients = total_gradients[0, :, :, :] / self.n_samples
 
